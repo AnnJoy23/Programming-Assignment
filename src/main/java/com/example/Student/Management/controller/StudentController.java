@@ -35,6 +35,17 @@ public class StudentController {
         return studentList.toString(); // Returning plain text
     }
 
+    @GetMapping("/students/{id}")
+    @ResponseBody
+    public String getStudentById(@PathVariable int id) {
+        Student student = studentService.getStudentById(id);
+        if (student != null) {
+            return "ID: " + student.getId() + ", Name: " + student.getName() + ", Course: " + student.getCourse();
+        } else {
+            return "Student with ID " + id + " not found.";
+        }
+    }
+
     // POST /api/students: Add a new student
     @PostMapping("/students")
     @ResponseBody

@@ -60,4 +60,12 @@ public class StudentService {
             return "Student not found.";
         }
     }
+
+    public Student getStudentById(int id) {
+        Optional<Student> studentOptional = students.stream()
+                .filter(student -> student.getId() == id)
+                .findFirst();
+
+        return studentOptional.orElse(null);
+    }
 }
