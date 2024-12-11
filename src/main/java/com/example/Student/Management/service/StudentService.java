@@ -9,7 +9,6 @@ import java.util.Optional;
 @Service
 public class StudentService {
 
-
     private List<Student> students = new ArrayList<>();
 
     // Mock data initialization
@@ -25,14 +24,14 @@ public class StudentService {
     }
 
     // Create a new student
-    public String createStudent(String name, String course) {
+    public Student createStudent(String name, String course) {
         Student newStudent = new Student(students.size() + 1, name, course);
         students.add(newStudent);
-        return "Student created: " + newStudent.getName() + ", " + newStudent.getCourse();
+        return newStudent;  // Return the created student object
     }
 
     // Update an existing student by ID
-    public String updateStudent(int id, String name, String course) {
+    public Student updateStudent(int id, String name, String course) {
         Optional<Student> studentOptional = students.stream()
                 .filter(student -> student.getId() == id)
                 .findFirst();
@@ -41,31 +40,31 @@ public class StudentService {
             Student student = studentOptional.get();
             student.setName(name);
             student.setCourse(course);
-            return "Student updated: " + student.getName() + ", " + student.getCourse();
+            return student;  // Return the updated student object
         } else {
-            return "Student not found.";
+            return null;  // Return null if student not found
         }
     }
 
     // Delete a student by ID
-    public String deleteStudent(int id) {
+    public boolean deleteStudent(int id) {
         Optional<Student> studentOptional = students.stream()
                 .filter(student -> student.getId() == id)
                 .findFirst();
 
         if (studentOptional.isPresent()) {
             students.remove(studentOptional.get());
-            return "Student deleted: " + studentOptional.get().getName();
+            return true;  // Return true if deletion is successful
         } else {
-            return "Student not found.";
+            return false;  // Return false if student not found
         }
     }
 
+    // Get a student by ID
     public Student getStudentById(int id) {
-        Optional<Student> studentOptional = students.stream()
+        return students.stream()
                 .filter(student -> student.getId() == id)
-                .findFirst();
-
-        return studentOptional.orElse(null);
+                .findFirst()
+                .orElse(null);  // Return student if found, else null
     }
 }
