@@ -32,33 +32,22 @@ public class StudentService {
 
     // Update an existing student by ID
     public Student updateStudent(int id, String name, String course) {
-        Optional<Student> studentOptional = students.stream()
+        return students.stream()
                 .filter(student -> student.getId() == id)
-                .findFirst();
-
-        if (studentOptional.isPresent()) {
-            Student student = studentOptional.get();
-            student.setName(name);
-            student.setCourse(course);
-            return student;  // Return the updated student object
-        } else {
-            return null;  // Return null if student not found
-        }
+                .findFirst()
+                .map(student -> {
+                    student.setName(name);
+                    student.setCourse(course);
+                    return student;  // Return the updated student object
+                })
+                .orElse(null);  // Return null if student not found
     }
 
     // Delete a student by ID
     public boolean deleteStudent(int id) {
-        Optional<Student> studentOptional = students.stream()
-                .filter(student -> student.getId() == id)
-                .findFirst();
-
-        if (studentOptional.isPresent()) {
-            students.remove(studentOptional.get());
-            return true;  // Return true if deletion is successful
-        } else {
-            return false;  // Return false if student not found
-        }
+        return students.removeIf(student -> student.getId() == id);  // Remove student and return true if successful
     }
+
 
     // Get a student by ID
     public Student getStudentById(int id) {
