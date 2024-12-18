@@ -3,16 +3,16 @@ package com.example.Student.Management.controller;
 import com.example.Student.Management.model.Student;
 import com.example.Student.Management.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/api")
+@RestController
+@RequestMapping("/api/students")
 public class StudentController {
 
-    // Injecting the StudentService class using constructor injection
     private final StudentService studentService;
 
     @Autowired
@@ -21,57 +21,42 @@ public class StudentController {
     }
 
     // GET /api/students: Retrieve all students
-    @GetMapping("/students")
-    @ResponseBody
-    public String getStudents() {
-        List<Student> students = studentService.getAllStudents();
-        StringBuilder studentList = new StringBuilder();
-        for (Student student : students) {
-            studentList.append("ID: ").append(student.getId())
-                    .append(", Name: ").append(student.getName())
-                    .append(", Course: ").append(student.getCourse())
-                    .append("\n");
-        }
-        return studentList.toString(); // Returning plain text
+    @GetMapping
+    public List<Student> getStudents() {
+        return studentService.getAllStudents();  // Returns a list of students in JSON format
     }
 
-    @GetMapping("/students/{id}")
-    @ResponseBody
-    public String getStudentById(@PathVariable int id) {
+    // GET /api/students/{id}: Retrieve a student by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Student> getStudentById(@PathVariable int id) {
         Student student = studentService.getStudentById(id);
-        if (student != null) {
-            return "ID: " + student.getId() + ", Name: " + student.getName() + ", Course: " + student.getCourse();
-        } else {
-            return "Student with ID " + id + " not found.";
-        }
+        return student != null
+                ? new ResponseEntity<>(student, HttpStatus.OK)  // Student found, return 200 OK
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Student not found, return 404 Not Found
     }
 
     // POST /api/students: Add a new student
-    @PostMapping("/students")
-    @ResponseBody
-    public String createStudent(@RequestBody String studentInfo) {
-        String[] studentDetails = studentInfo.split(",");
-        if (studentDetails.length == 2) {
-            return studentService.createStudent(studentDetails[0].trim(), studentDetails[1].trim());
-        }
-        return "Invalid student data. Please provide name and course.";
+    @PostMapping
+    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
+        Student createdStudent = studentService.createStudent(student.getName(), student.getCourse());
+        return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);  // Return 201 Created status
     }
 
-    // PUT /api/students/{id}: Update student details
-    @PutMapping("/students/{id}")
-    @ResponseBody
-    public String updateStudent(@PathVariable int id, @RequestBody String updatedInfo) {
-        String[] studentDetails = updatedInfo.split(",");
-        if (studentDetails.length == 2) {
-            return studentService.updateStudent(id, studentDetails[0].trim(), studentDetails[1].trim());
-        }
-        return "Invalid update data. Please provide name and course.";
+    // PUT /api/students/{id}: Update student details by ID
+    @PutMapping("/{id}")
+    public ResponseEntity<Student> updateStudent(@PathVariable int id, @RequestBody Student updatedStudent) {
+        Student student = studentService.updateStudent(id, updatedStudent.getName(), updatedStudent.getCourse());
+        return student != null
+                ? new ResponseEntity<>(student, HttpStatus.OK)  // Student updated, return 200 OK
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Student not found, return 404 Not Found
     }
 
-    // DELETE /api/students/{id}: Delete a student
-    @DeleteMapping("/students/{id}")
-    @ResponseBody
-    public String deleteStudent(@PathVariable int id) {
-        return studentService.deleteStudent(id);
+    // DELETE /api/students/{id}: Delete a student by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable int id) {
+        boolean isDeleted = studentService.deleteStudent(id);
+        return isDeleted
+                ? new ResponseEntity<>(HttpStatus.NO_CONTENT)  // Return 204 No Content on successful delete
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Student not found, return 404 Not Found
     }
 }
